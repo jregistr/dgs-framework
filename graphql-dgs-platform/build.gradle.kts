@@ -46,10 +46,15 @@ dependencies {
     // For more information at https://docs.gradle.org/current/userguide/rich_versions.html
     constraints {
         api("com.graphql-java:graphql-java") {
-            version { require(Versions.GRAPHQL_JAVA) }
+            version { require("16.2") }
+        }
+        api("com.graphql-java:graphql-java-extended-scalars") {
+            // Note that the version of graphql-java should dictate the version of.
+            // Ref. https://github.com/graphql-java/graphql-java-extended-scalars
+            version { require("16.0.0") }
         }
         api("com.apollographql.federation:federation-graphql-java-support") {
-            version { require(Versions.GRAPHQL_JAVA_FEDERATION) }
+            version { require("0.6.3") }
         }
         api("com.jayway.jsonpath:json-path") {
             version { require("[2.5,)") }
