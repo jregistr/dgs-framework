@@ -34,6 +34,7 @@ import graphql.execution.ExecutionStrategy
 import graphql.execution.NonNullableFieldWasNullError
 import graphql.execution.SubscriptionExecutionStrategy
 import graphql.execution.instrumentation.ChainedInstrumentation
+import graphql.execution.preparsed.PreparsedDocumentProvider
 import graphql.schema.GraphQLSchema
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -47,6 +48,7 @@ import java.util.concurrent.atomic.AtomicReference
  */
 class DefaultDgsQueryExecutor(
     defaultSchema: GraphQLSchema,
+    defaultPreparsedProvider: PreparsedDocumentProvider,
     private val schemaProvider: DgsSchemaProvider,
     private val dataLoaderProvider: DgsDataLoaderProvider,
     private val contextBuilder: DgsContextBuilder,
@@ -54,6 +56,7 @@ class DefaultDgsQueryExecutor(
     private val queryExecutionStrategy: ExecutionStrategy,
     private val mutationExecutionStrategy: ExecutionStrategy,
     private val idProvider: Optional<ExecutionIdProvider>,
+    private val preparsedDocumentFactory: DgsPreparsedDocumentFactory,
     private val reloadIndicator: ReloadSchemaIndicator = ReloadSchemaIndicator { false }
 ) : DgsQueryExecutor {
 
@@ -74,6 +77,7 @@ class DefaultDgsQueryExecutor(
     val logger: Logger = LoggerFactory.getLogger(DefaultDgsQueryExecutor::class.java)
 
     val schema = AtomicReference(defaultSchema)
+    private val preparsedProvider = AtomicReference(defaultPreparsedProvider)
 
     override fun execute(
         query: String,
@@ -89,12 +93,20 @@ class DefaultDgsQueryExecutor(
             else
                 schema.get()
 
+        val graphQLPreparsedDocProvider =
+            if(reloadIndicator.reloadSchema())
+                preparsedProvider.updateAndGet {preparsedDocumentFactory.provider()}
+            else
+                preparsedProvider.get()
+
         val graphQLBuilder =
             GraphQL.newGraphQL(graphQLSchema)
                 .instrumentation(chainedInstrumentation)
                 .queryExecutionStrategy(queryExecutionStrategy)
                 .mutationExecutionStrategy(mutationExecutionStrategy)
+                .preparsedDocumentProvider(graphQLPreparsedDocProvider)
                 .subscriptionExecutionStrategy(SubscriptionExecutionStrategy())
+
         if (idProvider.isPresent) {
             graphQLBuilder.executionIdProvider(idProvider.get())
         }
