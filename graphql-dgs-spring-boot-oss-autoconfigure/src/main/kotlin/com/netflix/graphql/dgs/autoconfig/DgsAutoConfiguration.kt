@@ -29,6 +29,7 @@ import com.netflix.graphql.dgs.internal.DgsDataLoaderProvider
 import com.netflix.graphql.dgs.internal.DgsSchemaProvider
 import com.netflix.graphql.dgs.scalars.UploadScalar
 import com.netflix.graphql.mocking.MockProvider
+import graphql.GraphQL
 import graphql.execution.*
 import graphql.execution.instrumentation.ChainedInstrumentation
 import graphql.execution.instrumentation.Instrumentation
@@ -45,6 +46,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
 import java.util.*
+import java.util.function.Consumer
 
 /**
  * Framework auto configuration based on open source Spring only, without Netflix integrations.
@@ -70,7 +72,8 @@ open class DgsAutoConfiguration(
         @Qualifier("query") providedQueryExecutionStrategy: Optional<ExecutionStrategy>,
         @Qualifier("mutation") providedMutationExecutionStrategy: Optional<ExecutionStrategy>,
         idProvider: Optional<ExecutionIdProvider>,
-        reloadSchemaIndicator: ReloadSchemaIndicator
+        reloadSchemaIndicator: ReloadSchemaIndicator,
+        gqlTransformer: Consumer<GraphQL.Builder>
     ): DgsQueryExecutor {
 
         val queryExecutionStrategy = providedQueryExecutionStrategy.orElse(AsyncExecutionStrategy(dataFetcherExceptionHandler))
@@ -84,7 +87,8 @@ open class DgsAutoConfiguration(
             queryExecutionStrategy,
             mutationExecutionStrategy,
             idProvider,
-            reloadSchemaIndicator
+            reloadSchemaIndicator,
+            gqlTransformer
         )
     }
 
@@ -149,6 +153,12 @@ open class DgsAutoConfiguration(
     @ConditionalOnMissingBean
     open fun schema(dgsSchemaProvider: DgsSchemaProvider): GraphQLSchema {
         return dgsSchemaProvider.schema()
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    open fun graphQlTransformer(): Consumer<GraphQL.Builder> {
+        return Consumer {  }
     }
 
     @Bean
