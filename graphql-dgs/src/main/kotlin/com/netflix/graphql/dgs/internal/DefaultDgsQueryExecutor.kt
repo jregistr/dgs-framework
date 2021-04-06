@@ -41,6 +41,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.web.context.request.WebRequest
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
+import java.util.function.Consumer
 
 /**
  * Main Query executing functionality. This should be reused between different transport protocols and the testing framework.
@@ -54,7 +55,8 @@ class DefaultDgsQueryExecutor(
     private val queryExecutionStrategy: ExecutionStrategy,
     private val mutationExecutionStrategy: ExecutionStrategy,
     private val idProvider: Optional<ExecutionIdProvider>,
-    private val reloadIndicator: ReloadSchemaIndicator = ReloadSchemaIndicator { false }
+    private val reloadIndicator: ReloadSchemaIndicator = ReloadSchemaIndicator { false },
+    private val graphqlTransformer: Consumer<GraphQL.Builder> = Consumer {  }
 ) : DgsQueryExecutor {
 
     private val parseContext: ParseContext =
@@ -98,7 +100,8 @@ class DefaultDgsQueryExecutor(
         if (idProvider.isPresent) {
             graphQLBuilder.executionIdProvider(idProvider.get())
         }
-        val graphQL = graphQLBuilder.build()
+        val graphQLTmp = graphQLBuilder.build()
+        val graphQL = graphQLTmp.transform(graphqlTransformer)
 
         val dgsContext = contextBuilder.build(DgsRequestData(extensions, headers, webRequest))
         val dataLoaderRegistry = dataLoaderProvider.buildRegistryWithContextSupplier({ dgsContext })
