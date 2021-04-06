@@ -22,16 +22,14 @@ import com.netflix.graphql.dgs.DgsQueryExecutor
 import com.netflix.graphql.dgs.context.DgsCustomContextBuilder
 import com.netflix.graphql.dgs.context.DgsCustomContextBuilderWithRequest
 import com.netflix.graphql.dgs.exceptions.DefaultDataFetcherExceptionHandler
-import com.netflix.graphql.dgs.internal.DefaultDgsGraphQLContextBuilder
-import com.netflix.graphql.dgs.internal.DefaultDgsQueryExecutor
+import com.netflix.graphql.dgs.internal.*
 import com.netflix.graphql.dgs.internal.DefaultDgsQueryExecutor.ReloadSchemaIndicator
-import com.netflix.graphql.dgs.internal.DgsDataLoaderProvider
-import com.netflix.graphql.dgs.internal.DgsSchemaProvider
 import com.netflix.graphql.dgs.scalars.UploadScalar
 import com.netflix.graphql.mocking.MockProvider
 import graphql.execution.*
 import graphql.execution.instrumentation.ChainedInstrumentation
 import graphql.execution.instrumentation.Instrumentation
+import graphql.execution.preparsed.PreparsedDocumentProvider
 import graphql.schema.GraphQLCodeRegistry
 import graphql.schema.GraphQLSchema
 import graphql.schema.idl.TypeDefinitionRegistry
@@ -66,13 +64,16 @@ open class DgsAutoConfiguration {
         @Qualifier("query") providedQueryExecutionStrategy: Optional<ExecutionStrategy>,
         @Qualifier("mutation") providedMutationExecutionStrategy: Optional<ExecutionStrategy>,
         idProvider: Optional<ExecutionIdProvider>,
-        reloadSchemaIndicator: ReloadSchemaIndicator
+        reloadSchemaIndicator: ReloadSchemaIndicator,
+        preparsedDocProvider: PreparsedDocumentProvider,
+        preparsedDocumentFactory: DgsPreparsedDocumentFactory
     ): DgsQueryExecutor {
 
         val queryExecutionStrategy = providedQueryExecutionStrategy.orElse(AsyncExecutionStrategy(dataFetcherExceptionHandler))
         val mutationExecutionStrategy = providedMutationExecutionStrategy.orElse(AsyncSerialExecutionStrategy(dataFetcherExceptionHandler))
         return DefaultDgsQueryExecutor(
             schema,
+            preparsedDocProvider,
             schemaProvider,
             dgsDataLoaderProvider,
             dgsContextBuilder,
@@ -80,7 +81,8 @@ open class DgsAutoConfiguration {
             queryExecutionStrategy,
             mutationExecutionStrategy,
             idProvider,
-            reloadSchemaIndicator
+            preparsedDocumentFactory,
+            reloadSchemaIndicator,
         )
     }
 
@@ -148,6 +150,23 @@ open class DgsAutoConfiguration {
         dgsCustomContextBuilderWithRequest: Optional<DgsCustomContextBuilderWithRequest<*>>
     ): DgsContextBuilder {
         return DefaultDgsGraphQLContextBuilder(dgsCustomContextBuilder, dgsCustomContextBuilderWithRequest)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    open fun preparsedDocProvider(
+        factory: DgsPreparsedDocumentFactory
+    ): PreparsedDocumentProvider {
+        return factory.provider()
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    open fun preparsedDocumentFactory(
+        applicationContext: ApplicationContext,
+        environment: Environment
+    ): DgsPreparsedDocumentFactory {
+        return DgsPreparsedDocumentFactory(applicationContext, environment)
     }
 
     @Bean
