@@ -35,6 +35,7 @@ import graphql.execution.ExecutionStrategy
 import graphql.execution.NonNullableFieldWasNullError
 import graphql.execution.SubscriptionExecutionStrategy
 import graphql.execution.instrumentation.ChainedInstrumentation
+import graphql.execution.preparsed.persisted.PersistedQuerySupport
 import graphql.schema.GraphQLSchema
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -56,7 +57,8 @@ class DefaultDgsQueryExecutor(
     private val queryExecutionStrategy: ExecutionStrategy,
     private val mutationExecutionStrategy: ExecutionStrategy,
     private val idProvider: Optional<ExecutionIdProvider>,
-    private val reloadIndicator: ReloadSchemaIndicator = ReloadSchemaIndicator { false }
+    private val reloadIndicator: ReloadSchemaIndicator = ReloadSchemaIndicator { false },
+    private val persistedQuerySupport: PersistedQuerySupport? = null
 ) : DgsQueryExecutor {
 
     val logger: Logger = LoggerFactory.getLogger(DefaultDgsQueryExecutor::class.java)
@@ -71,6 +73,14 @@ class DefaultDgsQueryExecutor(
         operationName: String?,
         webRequest: WebRequest?
     ): ExecutionResult {
+        println("!!!! Execute")
+        if (persistedQuerySupport != null) {
+            println("Persisted Query Not Null")
+            println(persistedQuerySupport.javaClass.simpleName)
+        } else {
+            println("Null Persisted query support")
+        }
+
         val graphQLSchema: GraphQLSchema =
             if (reloadIndicator.reloadSchema())
                 schema.updateAndGet { schemaProvider.schema() }
@@ -80,6 +90,7 @@ class DefaultDgsQueryExecutor(
         val executionResult = BaseDgsQueryExecutor.baseExecute(
             query,
             variables,
+            extensions,
             operationName,
             dgsContext,
             graphQLSchema,
@@ -87,7 +98,8 @@ class DefaultDgsQueryExecutor(
             chainedInstrumentation,
             queryExecutionStrategy,
             mutationExecutionStrategy,
-            idProvider
+            idProvider,
+            persistedQuerySupport
         )
 
         // Check for NonNullableFieldWasNull errors, and log them explicitly because they don't run through the exception handlers.
@@ -193,6 +205,7 @@ object BaseDgsQueryExecutor {
     fun baseExecute(
         query: String,
         variables: Map<String, Any>?,
+        extensions: Map<String, Any>?,
         operationName: String?,
         dgsContext: DgsContext,
         graphQLSchema: GraphQLSchema,
@@ -201,6 +214,7 @@ object BaseDgsQueryExecutor {
         queryExecutionStrategy: ExecutionStrategy,
         mutationExecutionStrategy: ExecutionStrategy,
         idProvider: Optional<ExecutionIdProvider>,
+        persistedQuerySupport: PersistedQuerySupport?
     ): CompletableFuture<out ExecutionResult> {
         val graphQLBuilder =
             GraphQL.newGraphQL(graphQLSchema)
@@ -208,6 +222,11 @@ object BaseDgsQueryExecutor {
                 .queryExecutionStrategy(queryExecutionStrategy)
                 .mutationExecutionStrategy(mutationExecutionStrategy)
                 .subscriptionExecutionStrategy(SubscriptionExecutionStrategy())
+        if (persistedQuerySupport != null) {
+            println("!!! --- There is persisted query support")
+            graphQLBuilder.preparsedDocumentProvider(persistedQuerySupport)
+        }
+
         if (idProvider.isPresent) {
             graphQLBuilder.executionIdProvider(idProvider.get())
         }
@@ -218,6 +237,7 @@ object BaseDgsQueryExecutor {
             .query(query)
             .dataLoaderRegistry(dataLoaderRegistry)
             .variables(variables)
+            .extensions(extensions)
             .operationName(operationName)
             .context(dgsContext)
             .build()

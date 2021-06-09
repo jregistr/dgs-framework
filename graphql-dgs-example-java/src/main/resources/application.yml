@@ -1,4 +1,5 @@
 spring:
   application:
     name: dgs-example
-
+  main:
+    allow-bean-definition-overriding: true

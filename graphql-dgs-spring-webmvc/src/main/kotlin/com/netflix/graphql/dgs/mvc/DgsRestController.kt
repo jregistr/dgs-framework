@@ -99,6 +99,8 @@ open class DgsRestController(private val dgsQueryExecutor: DgsQueryExecutor) {
                         .body(ex.message ?: "Error parsing query - no details found in the error message")
                 }
 
+                println(inputQuery)
+
                 queryVariables = if (inputQuery.get("variables") != null) {
                     @Suppress("UNCHECKED_CAST")
                     inputQuery["variables"] as Map<String, String>
@@ -161,7 +163,7 @@ open class DgsRestController(private val dgsQueryExecutor: DgsQueryExecutor) {
         val executionResult = TimeTracer.logTime(
             {
                 dgsQueryExecutor.execute(
-                    inputQuery["query"] as String,
+                    inputQuery.getOrDefault("query", "PersistedQueryMarker") as String,
                     queryVariables,
                     extensions,
                     headers,

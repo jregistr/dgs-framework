@@ -28,6 +28,9 @@ import com.netflix.graphql.mocking.MockProvider
 import graphql.execution.*
 import graphql.execution.instrumentation.ChainedInstrumentation
 import graphql.execution.instrumentation.Instrumentation
+import graphql.execution.preparsed.persisted.ApolloPersistedQuerySupport
+import graphql.execution.preparsed.persisted.InMemoryPersistedQueryCache
+import graphql.execution.preparsed.persisted.PersistedQuerySupport
 import graphql.schema.GraphQLCodeRegistry
 import graphql.schema.GraphQLSchema
 import graphql.schema.idl.TypeDefinitionRegistry
@@ -67,7 +70,8 @@ open class DgsAutoConfiguration(
         @Qualifier("query") providedQueryExecutionStrategy: Optional<ExecutionStrategy>,
         @Qualifier("mutation") providedMutationExecutionStrategy: Optional<ExecutionStrategy>,
         idProvider: Optional<ExecutionIdProvider>,
-        reloadSchemaIndicator: ReloadSchemaIndicator
+        reloadSchemaIndicator: ReloadSchemaIndicator,
+        persistedQuerySupport: PersistedQuerySupport? = null
     ): DgsQueryExecutor {
         val queryExecutionStrategy = providedQueryExecutionStrategy.orElse(AsyncExecutionStrategy(dataFetcherExceptionHandler))
         val mutationExecutionStrategy = providedMutationExecutionStrategy.orElse(AsyncSerialExecutionStrategy(dataFetcherExceptionHandler))
@@ -80,7 +84,8 @@ open class DgsAutoConfiguration(
             queryExecutionStrategy,
             mutationExecutionStrategy,
             idProvider,
-            reloadSchemaIndicator
+            reloadSchemaIndicator,
+            persistedQuerySupport
         )
     }
 
@@ -93,6 +98,14 @@ open class DgsAutoConfiguration(
     open fun dgsInstrumentation(instrumentation: Optional<List<Instrumentation>>): ChainedInstrumentation {
         val listOfInstrumentations = instrumentation.orElse(emptyList())
         return ChainedInstrumentation(listOfInstrumentations)
+    }
+
+    @Bean
+    open fun dgsApolloPersistedQueries(): PersistedQuerySupport {
+//        val cache = InMemoryPersistedQueryCache(mapOf())
+//        println("!!!!!!!!!!!!! ----- !!!!!!!!!!!!")
+//        return MyTestingApolloPersistedQuerySupport(cache)
+        throw NullPointerException("!!! -----")
     }
 
     /**

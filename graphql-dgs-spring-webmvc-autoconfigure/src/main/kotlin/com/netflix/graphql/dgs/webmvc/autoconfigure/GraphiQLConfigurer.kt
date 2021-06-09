@@ -50,6 +50,7 @@ open class GraphiQLConfigurer(
     }
 
     override fun addViewControllers(registry: ViewControllerRegistry) {
+        println("HERE!!!!")
         registry.addViewController(configProps.graphiql.path).setViewName("forward:$PATH_TO_GRAPHIQL_INDEX_HTML")
         registry.addViewController("${configProps.graphiql.path}/").setViewName("forward:$PATH_TO_GRAPHIQL_INDEX_HTML")
     }
