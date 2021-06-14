@@ -8,9 +8,8 @@ import graphql.execution.preparsed.persisted.PersistedQueryNotFound
 import graphql.execution.preparsed.persisted.PersistedQuerySupport
 import java.util.concurrent.ConcurrentHashMap
 
-class InMemoryApqCache(
+class InMemoryApqCache : PersistedQueryCache {
     private val cache: ConcurrentHashMap<Any, PreparsedDocumentEntry> = ConcurrentHashMap()
-) : PersistedQueryCache {
 
     override fun getPersistedQueryDocument(
         persistedQueryId: Any,
