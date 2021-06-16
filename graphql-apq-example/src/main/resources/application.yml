@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: dgs-apq-example
+  main:
+    allow-bean-definition-overriding: true
+
+
+management:
+  server:
+    port: 9999
+  endpoints:
+    enabled-by-default: true
+    web:
+      exposure:
+        include: caches,health,metrics,foobar
+  endpoint:
+    caches:
+      enabled: true
