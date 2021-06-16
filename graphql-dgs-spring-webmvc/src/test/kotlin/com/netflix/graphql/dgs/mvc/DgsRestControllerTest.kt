@@ -134,25 +134,6 @@ class DgsRestControllerTest {
         assertThat(errors.size).isEqualTo(0)
         assertThat(data["hello"]).isEqualTo("hello")
     }
-
-    @Test
-    fun `do something and see` () {
-        val body = """
-            {
-              "query": "",
-              "extensions": {
-                 "persistedQuery" : {
-                   "version": 1,
-                   "sha256Hash" : "ecf4edb46db40b5132295c0291d62fb65d6759a9eedfa4d5d612dd5ec54a6b38"
-                 }
-              }
-            }
-        """.trimIndent()
-
-        val headers = HttpHeaders()
-        headers.contentType = MediaType("application", "json")
-        val cont = DgsRestController(dgsQueryExecutor).graphql(body, null, null, null, headers, webRequest)
-    }
 }
 
 data class GraphQLResponse(val data: Map<String, Any> = emptyMap(), val errors: List<GraphQLError> = emptyList())

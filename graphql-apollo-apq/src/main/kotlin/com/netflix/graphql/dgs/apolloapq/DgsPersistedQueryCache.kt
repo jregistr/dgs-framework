@@ -40,6 +40,7 @@ open class DgsPersistedQueryCache : PersistedQueryCache {
 
     @CacheEvict(allEntries = true)
     open fun evictAllEntries() {
+        astDocumentsCache.clear()
     }
 
     @Cacheable(key = "#queryHash.toString()")
