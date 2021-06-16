@@ -99,8 +99,6 @@ open class DgsRestController(private val dgsQueryExecutor: DgsQueryExecutor) {
                         .body(ex.message ?: "Error parsing query - no details found in the error message")
                 }
 
-                println(inputQuery)
-
                 queryVariables = if (inputQuery.get("variables") != null) {
                     @Suppress("UNCHECKED_CAST")
                     inputQuery["variables"] as Map<String, String>
@@ -160,10 +158,15 @@ open class DgsRestController(private val dgsQueryExecutor: DgsQueryExecutor) {
             return ResponseEntity.badRequest().body("Invalid GraphQL request - operationName must be a String")
         }
 
+        val query = when (extensions.isEmpty()) {
+            true -> inputQuery["query"]
+            else -> inputQuery.getOrDefault("query", "")
+        } as String
+
         val executionResult = TimeTracer.logTime(
             {
                 dgsQueryExecutor.execute(
-                    inputQuery.getOrDefault("query", "PersistedQueryMarker") as String,
+                    query,
                     queryVariables,
                     extensions,
                     headers,

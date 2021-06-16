@@ -1,6 +1,5 @@
 package com.netflix.graphql.dgs.apolloapq
 
-import graphql.ErrorType
 import graphql.ExecutionInput
 import graphql.GraphqlErrorBuilder
 import graphql.execution.preparsed.PreparsedDocumentEntry
@@ -12,7 +11,6 @@ import org.springframework.cache.annotation.CacheConfig
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.CachePut
 import org.springframework.cache.annotation.Cacheable
-import java.lang.RuntimeException
 import java.math.BigInteger
 import java.security.MessageDigest
 import java.util.concurrent.ConcurrentHashMap
@@ -85,7 +83,7 @@ open class DgsPersistedQueryCache : PersistedQueryCache {
         } else {
             // The query is present, so this query wants to register a new Query.
             // E.G. {"query": "{__typename}", "variables": {id: "1"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"ecf4edb46db40b5132295c0291d62fb65d6759a9eedfa4d5d612dd5ec54a6b38"}}}
-            if (!validateChecksum(persistedQueryId, reqQuery)) {
+            if (!isValidChecksum(persistedQueryId, reqQuery)) {
                 val error = GraphqlErrorBuilder.newError()
                     .message("provided sha does not match query")
                     .errorType(com.netflix.graphql.types.errors.ErrorType.BAD_REQUEST)
@@ -99,7 +97,7 @@ open class DgsPersistedQueryCache : PersistedQueryCache {
         }
     }
 
-    private fun validateChecksum(providedChecksum: Any, queryString: String): Boolean {
+    private fun isValidChecksum(providedChecksum: Any, queryString: String): Boolean {
         val calculatedChecksum = String.format(
             "%064x",
             BigInteger(1, MessageDigest.getInstance(ChecksumDigestType).digest(queryString.toByteArray(Charsets.UTF_8)))

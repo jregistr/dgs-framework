@@ -72,5 +72,3 @@ buildSrc/.gradle/
 /.idea/kotlinScripting.xml
 scripts/__pycache__/
 
-### Temporary
-graphql-apq-example/
