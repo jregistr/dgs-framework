@@ -28,7 +28,6 @@ import graphql.execution.ExecutionIdProvider
 import graphql.execution.ExecutionStrategy
 import graphql.execution.NonNullableFieldWasNullError
 import graphql.execution.instrumentation.ChainedInstrumentation
-import graphql.execution.preparsed.persisted.PersistedQuerySupport
 import graphql.schema.GraphQLSchema
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -47,8 +46,7 @@ class DefaultDgsReactiveQueryExecutor(
     private val queryExecutionStrategy: ExecutionStrategy,
     private val mutationExecutionStrategy: ExecutionStrategy,
     private val idProvider: Optional<ExecutionIdProvider>,
-    private val reloadIndicator: DefaultDgsQueryExecutor.ReloadSchemaIndicator = DefaultDgsQueryExecutor.ReloadSchemaIndicator { false },
-    private val persistedQuerySupport: PersistedQuerySupport? = null
+    private val reloadIndicator: DefaultDgsQueryExecutor.ReloadSchemaIndicator = DefaultDgsQueryExecutor.ReloadSchemaIndicator { false }
 ) : com.netflix.graphql.dgs.reactive.DgsReactiveQueryExecutor {
     private val logger: Logger = LoggerFactory.getLogger(DefaultDgsQueryExecutor::class.java)
 
@@ -80,8 +78,7 @@ class DefaultDgsReactiveQueryExecutor(
                         chainedInstrumentation,
                         queryExecutionStrategy,
                         mutationExecutionStrategy,
-                        idProvider,
-                        persistedQuerySupport
+                        idProvider
                     )
                 ).doOnEach { result ->
                     if (result.hasValue()) {

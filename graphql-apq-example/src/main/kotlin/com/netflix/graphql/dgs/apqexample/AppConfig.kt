@@ -9,6 +9,6 @@ import org.springframework.context.annotation.Configuration
 open class AppConfig {
     @Bean
     open fun manager(): CacheManager {
-        return ConcurrentMapCacheManager("Persisted-Queries")
+        return ConcurrentMapCacheManager("PersistedQueries", "DocumentCache")
     }
 }

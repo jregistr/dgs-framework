@@ -7,15 +7,16 @@ import graphql.execution.preparsed.persisted.ApolloPersistedQuerySupport
 import java.util.function.Function
 
 class DgsApolloPersistedQuerySupport(
-    private val cache: DgsPersistedQueryCache,
+    private val cache: DgsPersistedQueryDocCache,
     private val reloadIndicator: DefaultDgsQueryExecutor.ReloadSchemaIndicator
 ) : ApolloPersistedQuerySupport(cache) {
     override fun getDocument(
         executionInput: ExecutionInput?,
         parseAndValidateFunction: Function<ExecutionInput, PreparsedDocumentEntry>?
     ): PreparsedDocumentEntry {
+        println("Called!")
         if (reloadIndicator.reloadSchema()) {
-            cache.evictAllEntries()
+            cache.evictAll()
         }
         return super.getDocument(executionInput, parseAndValidateFunction)
     }

@@ -3,7 +3,6 @@ package com.netflix.graphql.dgs.apqexample
 import com.netflix.graphql.dgs.DgsFederationResolver
 import com.netflix.graphql.dgs.DgsQueryExecutor
 import com.netflix.graphql.dgs.autoconfig.DgsConfigurationProperties
-import com.netflix.graphql.dgs.autoconfig.MyTestingApolloPersistedQuerySupport
 import com.netflix.graphql.dgs.context.DgsCustomContextBuilder
 import com.netflix.graphql.dgs.context.DgsCustomContextBuilderWithRequest
 import com.netflix.graphql.dgs.exceptions.DefaultDataFetcherExceptionHandler

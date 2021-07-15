@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.cache.Cache
 import org.springframework.cache.CacheManager
+import org.springframework.cache.annotation.EnableCaching
 import org.springframework.cache.concurrent.ConcurrentMapCache
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager
 import org.springframework.cache.support.SimpleValueWrapper
@@ -31,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap
 @ContextConfiguration
 internal class DgsPersistedQueryCacheTest {
     @Configuration
+    @EnableCaching
     open class TestConfig {
         @Bean
         open fun cacheManager(): CacheManager {
@@ -45,6 +47,9 @@ internal class DgsPersistedQueryCacheTest {
     lateinit var docEntry: PreparsedDocumentEntry
 
     lateinit var apqCache: DgsPersistedQueryCache
+
+    @Autowired
+    lateinit var manager: CacheManager
 
     @BeforeEach
     internal fun setUp() {

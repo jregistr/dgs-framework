@@ -214,9 +214,7 @@ object BaseDgsQueryExecutor {
                 .queryExecutionStrategy(queryExecutionStrategy)
                 .mutationExecutionStrategy(mutationExecutionStrategy)
                 .subscriptionExecutionStrategy(SubscriptionExecutionStrategy())
-        if (preparsedDocProvider.isPresent) {
-            graphQLBuilder.preparsedDocumentProvider(preparsedDocProvider.get())
-        }
+        preparsedDocProvider.ifPresent { graphQLBuilder.preparsedDocumentProvider(it) }
 
         if (idProvider.isPresent) {
             graphQLBuilder.executionIdProvider(idProvider.get())

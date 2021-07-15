@@ -16,3 +16,7 @@ management:
   endpoint:
     caches:
       enabled: true
+dgs:
+  graphql:
+    apq:
+      enable: true
